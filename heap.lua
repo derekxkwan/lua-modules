@@ -1,13 +1,12 @@
+--derek kwan 2016, released under gpl v2.0
+
 local heap = {}
 
 heap.size = 0
 heap.data = {}
 heap.htype = 0 --0=min, 1=max
 
-heap.called = 0
-
 --local functions
---
 local heapinv = function(idx1, idx2)
     --return 1 if passes heapinvariant, 0 if fails
     --pass child idx as idx1, parent idx as idx2
@@ -188,7 +187,6 @@ heap.delelt = function(elt)
     heap.delidx(idx)
 end
 
-
 heap.pop = function()
     local retval = heap.peek()
     if heap.size < 1 then
@@ -214,12 +212,3 @@ heap.reset = function()
 end
 
 return heap
-
-
-
-
-
-                
-
-
-
