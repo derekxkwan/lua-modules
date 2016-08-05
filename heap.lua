@@ -1,10 +1,10 @@
---derek kwan 2016, released under gpl v2.0
+--Derek Kwan 2016, released under gpl v2.0
 
 local heap = {}
 
-heap.size = 0
-heap.data = {}
-heap.htype = 0 --0=min, 1=max
+heapsize = 0
+heapdata = {}
+heaptype = 0 --0=min, 1=max
 
 --local functions
 local heapinv = function(idx1, idx2)
@@ -14,24 +14,24 @@ local heapinv = function(idx1, idx2)
     local elt1
     local elt2
     --bounds checking
-    if idx1 > heap.size or idx2 > heap.size then
+    if idx1 > heapsize or idx2 > heapsize then
         return nil
     else
         --else get vals at indices
-        elt1 = heap.data[idx1]
-        elt2 = heap.data[idx2]
+        elt1 = heapdata[idx1]
+        elt2 = heapdata[idx2]
     end
     local cmp1 = elt1
     local cmp2 = elt2
-    --if elt1 and elt2 are not numbers, change them to compare the first elt
-    if type(elt1) ~= "number" then
+    --if elt1 and elt2 are not numbers or strings, change them to compare the first elt
+    if type(elt1) ~= "number" and type(elt1) ~= "string" then
         cmp1 = elt1[1]
     end
-    if type(elt2) ~= "number" then
+    if type(elt2) ~= "number" and type(elt1) ~= "string" then
         cmp2 = elt2[1]
     end
 
-    if heap.htype == 0 then
+    if heaptype == 0 then
         --minheap, children must be larger so return true if larger 
         if cmp1 >= cmp2 then
             retval = true
@@ -79,7 +79,7 @@ end
 
 heap.dump = function()
     --prints indices and values of data
-    for i,v in pairs(heap.data) do
+    for i,v in pairs(heapdata) do
         if type(v) == "number" or type(v) == "string" then
             print(i,v)
         else
@@ -99,7 +99,7 @@ end
 heap.search = function(tofind)
     --returns index of first instance of tofind, if can't find then returns nil
     local retidx = nil
-    for i,v in pairs(heap.data) do
+    for i,v in pairs(heapdata) do
         if heapeq(v,tofind) == true then
             retidx = i
             break
@@ -110,10 +110,10 @@ end
     
 heap.push = function(elt)
     --increment size than set pos to size since 1-indexed
-    heap.size = heap.size + 1
-    local pos = heap.size
+    heapsize = heapsize + 1
+    local pos = heapsize
 
-    heap.data[pos] = elt
+    heapdata[pos] = elt
     
     --keep comparing to parents which is floor(pos/2)
     --if child fails heapinv with parent, swap and continue
@@ -123,47 +123,53 @@ heap.push = function(elt)
         if heapinv(pos, pidx) == true then
             break
         else
-            heap.data[pos],heap.data[pidx] = heap.data[pidx],heap.data[pos]
+            heapdata[pos],heapdata[pidx] = heapdata[pidx],heapdata[pos]
             pos = pidx
         end
     end
 end
 
 heap.heapify = function(arr,htype)
-    heap.data = {}
-    heap.size = 0
-    heap.htype = htype
+    heapdata = {}
+    heapsize = 0
+    -- htype should be "min" or "max" but just check for max, else default to min
+    if htype == "max" then
+        heaptype = 1
+    else
+        heaptype = 0
+    end
+ 
     for idx,elt in pairs(arr) do
         heap.push(elt)
     end
 end
 
 heap.peek = function()
-    if heap.size < 1 then
+    if heapsize < 1 then
         return nil
     else
-        return heap.data[1]
+        return heapdata[1]
     end
 end
 
 heap.delidx = function(idx)
     --delete elt by index
     --bounds checking
-    if idx < 1 or idx > heap.size then
+    if idx < 1 or idx > heapsize then
         return
     end
     --make last elt  elt to be replaced and percolate down
-    heap.data[idx] = heap.data[heap.size]
-    table.remove(heap.data, heap.size)
-    heap.size = heap.size - 1 --decrement
+    heapdata[idx] = heapdata[heapsize]
+    table.remove(heapdata, heapsize)
+    heapsize = heapsize - 1 --decrement
 
     local pos = 1 --position of element to percolate down
     
     --percolate down
-    while (pos*2) <= heap.size do
+    while (pos*2) <= heapsize do
         --if there's at least a left child
         local posrep = pos*2 --position to replace
-        if (posrep + 1)<=heap.size then
+        if (posrep + 1)<=heapsize then
             --if there's a right child
             --need to find child that gives best change of satisfying heapinv
             --if child1 satisfies heapinv with child2, child1 could be child of child2
@@ -173,7 +179,7 @@ heap.delidx = function(idx)
             end
         end
         if heapinv(pos, posrep) == true then
-            heap.data[pos],heap.data[posrep] = heap.data[posrep],heap.data[pos]
+            heapdata[pos],heapdata[posrep] = heapdata[posrep],heapdata[pos]
             pos = posrep
         else
             break
@@ -189,11 +195,11 @@ end
 
 heap.pop = function()
     local retval = heap.peek()
-    if heap.size < 1 then
+    if heapsize < 1 then
         return nil
-    elseif heap.size == 1 then
-        heap.data = {}
-        heap.size = 0
+    elseif heapsize == 1 then
+        heapdata = {}
+        heapsize = 0
     else
         heap.delete(1)
     end
@@ -207,8 +213,33 @@ heap.heapmerge = function(heap2)
 end
 
 heap.reset = function()
-    heap.data = {}
-    heap.size = 0
+    heapdata = {}
+    heapsize = 0
+end
+
+--setters/getters
+heap.getsize = function()
+    return heapsize
+end
+
+heap.gettype = function()
+    local retstr
+    if heaptype == 0 then
+        retstr = "min"
+    else
+        retstr = "max"
+    end
+    return retstr
+end
+
+heap.settype = function(htype)
+    --check if equal to old type, if not reheapify
+    local curtype = heap.gettype()
+    if curtype ~= htype then
+        local olddata = heapdata
+        heap.reset()
+        heap.heapify(olddata,htype)
+    end
 end
 
 return heap
