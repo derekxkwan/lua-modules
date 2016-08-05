@@ -201,7 +201,7 @@ heap.pop = function()
         heapdata = {}
         heapsize = 0
     else
-        heap.delete(1)
+        heap.delidx(1)
     end
     return retval
 end
