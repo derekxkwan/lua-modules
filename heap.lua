@@ -88,6 +88,41 @@ heap.peek = function()
     end
 end
 
+heap.delete = function(idx)
+    --bounds checking
+    if idx < 1 or idx > heap.size then
+        return
+    end
+    --make last elt  elt to be replaced and percolate down
+    heap.data[idx] = heap.data[heap.size]
+    table.remove(heap.data, heap.size)
+    heap.size = heap.size - 1 --decrement
+
+    local pos = 1 --position of element to percolate down
+    
+    --percolate down
+    while (pos*2) <= heap.size do
+        --if there's at least a left child
+        local posrep = pos*2 --position to replace
+        if (posrep + 1)<=heap.size then
+            --if there's a right child
+            --need to find child that gives best change of satisfying inv
+            --if child1 satisfies inv with child2, child1 could be child of child2
+            --so then swap with child2 instead of child1
+            if inv(posrep,posrep+1) == true then
+                posrep = posrep + 1
+            end
+        end
+        if inv(pos, posrep) == true then
+            heap.data[pos],heap.data[posrep] = heap.data[posrep],heap.data[pos]
+            pos = posrep
+        else
+            break
+        end
+    end
+end
+
+
 heap.pop = function()
     local retval = heap.peek()
     if heap.size < 1 then
@@ -96,32 +131,7 @@ heap.pop = function()
         heap.data = {}
         heap.size = 0
     else
-        --make last elt first elt and percolate down
-        heap.data[1] = heap.data[heap.size]
-        heap.size = heap.size - 1 --decrement
-
-        local pos = 1 --position of element to percolate down
-        
-        --percolate down
-        while (pos*2) <= heap.size do
-            --if there's at least a left child
-            local posrep = pos*2 --position to replace
-            if (posrep + 1)<=heap.size then
-                --if there's a right child
-                --need to find child that gives best change of satisfying inv
-                --if child1 satisfies inv with child2, child1 could be child of child2
-                --so then swap with child2 instead of child1
-                if inv(posrep,posrep+1) == true then
-                    posrep = posrep + 1
-                end
-            end
-            if inv(pos, posrep) == true then
-                heap.data[pos],heap.data[posrep] = heap.data[posrep],heap.data[pos]
-                pos = posrep
-            else
-                break
-            end
-        end
+        heap.delete(1)
     end
     return retval
 end
@@ -132,7 +142,7 @@ heap.heapmerge = function(heap2)
     end
 end
 
-heap.delete = function()
+heap.reset = function()
     heap.data = {}
     heap.size = 0
 end
